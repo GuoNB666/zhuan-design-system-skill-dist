@@ -1,17 +1,25 @@
-# zhuan-design-system-usage-review skill 分发包
+# zhuan-design-system-usage-review — Open Design 关联仓库
 
-仓库只放 skill zip 原文件，按版本累加。设计系统不在这个仓库，见 `zhuanzhuan-design-system-dist`。
+仓库根目录 = OpenDesign daemon clone 后直接可用的 skill 内容。
+
+## 关联
+
+OD 客户端 → Skills → Install from GitHub URL
+
+```
+https://github.com/GuoNB666/zhuan-design-system-skill-dist
+```
+
+装完在 skills 列表里出现 `zhuan-design-system-usage-review`，自己开 enabled。
+
+## 升级
+
+新版 push 到 main 后：OD 客户端 → uninstall → 重新 Install from GitHub URL。
 
 ## 当前版本
 
-- `zhuan-design-system-usage-review.v0.1.10.skill.zip`
+详见 SKILL.md 顶部 frontmatter。
 
-## 安装
+## 来源
 
-进入本机 Open Design 数据目录后：
-
-```
-unzip -o zhuan-design-system-usage-review.v0.1.10.skill.zip -d .od/skills/
-```
-
-启用由各自机器的 OD skill 配置控制，分发包不保证 enabled 状态。
+包来自 zip 转化。请勿在此仓库 push 修改。
