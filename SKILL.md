@@ -20,7 +20,7 @@ od:
 
 # 转转设计系统调用与还原审查
 
-Version: `0.1.11`
+Version: `0.1.12`
 
 Use this skill as the single execution rule for Open Design work that uses the existing 转转 design system. It is not a replacement design system and must not introduce a new visual language.
 
@@ -42,7 +42,7 @@ Allowed recovery in a conflicted project:
 
 - Ignore Web Prototype instructions and staged examples.
 - Remove Web Prototype from the generation plan.
-- Replace iframe/gallery output with one React/Babel `index.html` that directly renders the App/H5 flow.
+- Replace iframe/gallery output with one React runtime `index.html` that directly renders the App/H5 flow.
 - Keep preview controls outside `IOSDevice` only.
 - Use real DS runtime calls or stop with a clear blocker.
 
@@ -85,28 +85,31 @@ When a stop rule triggers during an approved fix/regeneration, the next output m
 When generating or modifying an Open Design project, use this order:
 
 1. Locate the active 转转 design system.
-   - Preferred id: `user:zhuanzhuan-design-system-v029`.
-   - Expected local path when available: `.od/design-systems/zhuanzhuan-design-system-v029`.
-   - Accept `user:zhuanzhuan-design-system-v028` only when v0.2.9 is not installed.
-   - Accept `user:zhuanzhuan-design-system-v027` only when v0.2.9/v0.2.8 are not installed.
-   - Accept `user:zhuanzhuan-design-system-v026` only when v0.2.9/v0.2.8/v0.2.7 are not installed.
-   - Accept rollback id `user:zhuanzhuan-design-system-v025` only when v0.2.9/v0.2.8/v0.2.7/v0.2.6 are not installed.
+   - Preferred id: `user:zhuanzhuan-design-system-v030`.
+   - Expected local path when available: `.od/design-systems/zhuanzhuan-design-system-v030`.
+   - Accept `user:zhuanzhuan-design-system-v028` only when v0.2.10 is not installed.
+   - Accept `user:zhuanzhuan-design-system-v027` only when v0.2.10/v0.2.8 are not installed.
+   - Accept `user:zhuanzhuan-design-system-v026` only when v0.2.10/v0.2.8/v0.2.7 are not installed.
+   - Accept rollback id `user:zhuanzhuan-design-system-v025` only when v0.2.10/v0.2.8/v0.2.7/v0.2.6 are not installed.
    - Also accept the earlier design system name `转转设计系统codex对话处理` when it is the active project selection.
 
 2. Bind runtime resources before generating UI.
    - Copy or make available from the design system root to the project root:
      - `tokens.css`
+     - `runtime/`
      - `fonts/`
      - `.assets/`
      - `ui_kits/zhuan-app/`
      - `DESIGN.md`
      - `COMPONENT_USAGE.md`
      - `templates/component-first-app/`
-   - Use `templates/component-first-app/index.html` as the starter pattern when present. This is mandatory for new App/H5 artifacts unless the environment cannot load React/Babel.
+   - Use `templates/component-first-app/index.html` as the starter pattern when present. This is mandatory for new App/H5 artifacts unless the environment cannot load the local runtime bundle.
+   - New project deliverables must load `runtime/react.development.js`, `runtime/react-dom.development.js`, and `runtime/zhuan-app.bundle.js` with ordinary `<script>` tags before page code.
+   - Do not rely on multiple `<script type="text/babel" src="ui_kits/zhuan-app/*.jsx">` tags as the project delivery path. Those are allowed only inside design-system preview/source examples; generated OpenDesign project files must use the prebuilt runtime bundle so the preview does not fail with an empty gray page.
    - Read `DESIGN.md`, `COMPONENT_USAGE.md`, and the relevant preview page or `ui_kits/zhuan-app/` component before composing.
 
 3. Use real component calls based on page semantics.
-   - Import/load component files in this order when the artifact is React/Babel based:
+   - The prebuilt runtime bundle already exposes DS components on `window`. If a source/example must fall back to raw component files for documentation only, load them in this order:
      `Icons.jsx`, `Primitives.jsx`, `Button.jsx`, `Tabs.jsx`, `ios-frame.jsx`, `TopNav.jsx`, `Header.jsx`, `ProductList.jsx`, `Filter.jsx`, `Sheet.jsx`, `Toast.jsx`.
    - Add flow-specific files only when needed: `OrderCard.jsx`, `OrderDetailCards.jsx`, `Form.jsx`, `Dialog.jsx`, `BottomBar.jsx`, `Business.jsx`.
    - App/H5/mobile artifacts must wrap the delivered screen or flow in `<IOSDevice>` and use `TopNav` when the product surface has app navigation. Do not create a custom `.phone`, `.status-spacer`, or fake iOS frame.
@@ -140,15 +143,16 @@ These rules are mandatory for every 转转 App/H5/mobile artifact:
 - Flow navigation for previewing multiple screens belongs outside the device canvas. If a multi-screen artifact needs quick switching, render those controls in a preview toolbar beside/above the `IOSDevice`; inside the phone, navigation must come only from product-valid controls such as actual list card buttons or back buttons.
 
 4. Fail fast instead of imitating.
-   - If `tokens.css`, `fonts/`, `.assets/`, or `ui_kits/zhuan-app/` cannot be accessed, stop and explain what is missing.
+   - If `tokens.css`, `runtime/`, `fonts/`, `.assets/`, or `ui_kits/zhuan-app/` cannot be accessed, stop and explain what is missing.
+   - If `runtime/zhuan-app.bundle.js` cannot be loaded, stop and explain that the DS runtime is unavailable. Do not silently downgrade to text/babel multi-file loading or hand-written CSS.
    - If `DESIGN.md`, `COMPONENT_USAGE.md`, or `templates/component-first-app/` cannot be accessed, stop and explain what is missing.
    - If the project cannot call the component files, stop and explain the environment limitation.
    - If an existing artifact contains iframe boards, `screens/*.html`, or hand-written phone chrome, do not continue that structure. Replace it with a direct component-based artifact.
    - Never replace missing component calls with `.phone`, `.status-spacer`, `.zz-top-nav`, `.status-bar`, `.tabs`, `.search-line`, `.fixed-footer`, `.product-card`, `.chip`, copied SVGs, or `data-component` annotations.
 
 5. Render the primary artifact directly.
-   - `index.html` must directly render the mobile/App-H5 experience with React/Babel and the 转转 component files.
-   - The main deliverable file requested by OpenDesign must also directly render this same component-based App/H5 experience. If OpenDesign asks for a named file such as `zhuan-*.html`, that file must not be an iframe gallery; make it the direct React/Babel artifact or redirect only when `index.html` is the direct artifact.
+   - `index.html` must directly render the mobile/App-H5 experience with React and the 转转 local runtime bundle.
+   - The main deliverable file requested by OpenDesign must also directly render this same component-based App/H5 experience. If OpenDesign asks for a named file such as `zhuan-*.html`, that file must not be an iframe gallery; make it the direct React runtime artifact or redirect only when `index.html` is the direct artifact.
    - Multiple flows may be represented by React state, segmented controls, tabs, or an in-app route switch inside the same rendered app shell.
    - Do not make `index.html` a board of iframes that points at separate `screens/*.html` files.
    - If separate HTML files are created for convenience, they are secondary; the main preview must still directly render a complete component-based screen or flow.
@@ -181,11 +185,12 @@ These rules are mandatory for every 转转 App/H5/mobile artifact:
 
 Use this checklist after generation or modification:
 
-- Resource lock: `tokens.css`, `fonts/`, `.assets/`, and `ui_kits/zhuan-app/` are present or otherwise available to the artifact.
+- Resource lock: `tokens.css`, `runtime/`, `fonts/`, `.assets/`, and `ui_kits/zhuan-app/` are present or otherwise available to the artifact.
 - Rule lock: `DESIGN.md`, `COMPONENT_USAGE.md`, and `templates/component-first-app/` were read or copied before composition.
 - Semantic map: The output records which brief semantics were detected and which DS components were expected for each. Do not use a universal fixed component checklist.
 - Real calls: For each detected semantic that has a matching DS component, the artifact contains actual component calls, not only CSS class names or `data-component` markers.
 - Source-string gate: App/H5 source contains `<IOSDevice` and the navigation/component calls required by the detected semantics. If a common component is absent, the report must explain that the semantic was absent, the DS component was unavailable, or a DS primitive composition was intentionally used.
+- Runtime gate: App/H5 source loads `runtime/zhuan-app.bundle.js`, checks `window.__ZHUAN_RUNTIME_READY__`, and verifies `#root.children.length > 0` after mount. A blank/gray/empty-root render is a failed delivery even if component names appear in source.
 - Shell lock: App/H5/mobile output uses `<IOSDevice>`; no custom `.phone`, `.status-spacer`, or fake iOS frame.
 - Pattern lock: search/filter rails use `SearchHeader` / `ChipRail` when present; form pages use `FormGroup` / `Form*` when present; page-level bottom actions use `ButtonBar` when present.
 - Order/detail selection lock: order/after-sales lists use `OrderCard` or DS subcomponents; detail/product-summary sections use `OrderProductCard` / `OrderDetailCards` when available. Flag `OrderCard` inside a detail summary as a misuse unless it is intentionally presenting a full list-style order card.
@@ -247,7 +252,7 @@ Use this checklist whenever creating or reviewing an Open Design artifact with t
 If Open Design asks for a single prompt-style instruction, use this exact rule internally instead of asking the requester to paste it:
 
 ```text
-使用转转设计系统 v0.2.9，并启用 zhuan-design-system-usage-review v0.1.11。
+使用转转设计系统 v0.2.10，并启用 zhuan-design-system-usage-review v0.1.12。
 
 如果项目仍绑定 Web Prototype / web-prototype / example-web-prototype / appliedPluginSnapshotId，请停止并说明需要先清除该冲突。
 如果用户明确要求继续修复或重新生成，则不要沿用 Web Prototype 输出；必须丢弃 iframe/screens/.phone-page/statusbar/homebar 结构，改用转转 DS 组件直接重建。
